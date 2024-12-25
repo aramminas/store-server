@@ -6,3 +6,13 @@ II. Run the following commands
 
 1. npm run migrate
 2. npm run dev
+
+// Migrations
+
+<!-- create migration -->
+
+`npx knex migrate:make table_name`
+
+<!-- run migration -->
+
+`npm run migrate`

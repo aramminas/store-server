@@ -7,8 +7,8 @@ import {
   updateProductService,
 } from "../modules/productModel";
 import { removeFile } from "../utils";
-import { ProductT } from "../types/common";
 import { handleResponse } from "../utils/controller";
+import { ProductT, RequestWithUser } from "../types/common";
 
 export const getAllProducts = async (
   req: Request,
@@ -78,7 +78,7 @@ export const createProduct = async (
 };
 
 export const updateProduct = async (
-  req: Request,
+  req: RequestWithUser,
   res: Response,
   next: NextFunction
 ) => {
@@ -90,7 +90,7 @@ export const updateProduct = async (
   }
 
   const productId = Number(req.params.id);
-  const userId = Number(req.query.userId);
+  const userId = Number(req?.user?.id);
 
   try {
     const product: ProductT | null = await getProductByIdService<ProductT>(
@@ -118,15 +118,6 @@ export const updateProduct = async (
       imageUrl,
     });
 
-    console.log("updatedProduct :>> ", updatedProduct, {
-      id,
-      name,
-      price,
-      discountedPrice,
-      description,
-      imageUrl,
-    });
-
     return handleResponse(
       res,
       200,
@@ -139,11 +130,11 @@ export const updateProduct = async (
 };
 
 export const deleteProduct = async (
-  req: Request,
+  req: RequestWithUser,
   res: Response,
   next: NextFunction
 ) => {
-  const userId = req.query.userId ? +req.query.userId : null;
+  const userId = req.user?.id;
   const productId = +req.params.id;
   try {
     const product = await getProductByIdService<ProductT>(productId);

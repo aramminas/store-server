@@ -1,3 +1,5 @@
+import escapeHTML from "escape-html";
+
 import pool from "../database/database";
 import { ProductT } from "../types/common";
 
@@ -29,11 +31,11 @@ export const getAllProductsService = async (
   `;
 
   if (id) {
-    where = ` WHERE id = $1`;
+    where = ` WHERE creator_id = $1`;
     parrams.push(id);
   }
 
-  if (where) {
+  if (where && name) {
     where += ` AND name ILIKE $2`;
     parrams.push(`%${name}%`);
   } else if (name) {
@@ -66,9 +68,11 @@ export const createProductsService = async ({
   imageUrl,
   creatorId,
 }: Omit<ProductT, "id" | "updatedAt" | "createdAt">) => {
+  const descriptionEscape = escapeHTML(description || "") || null;
+
   const result = await pool.query(
     "INSERT INTO products (name, price, discounted_price, description, image_url, creator_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-    [name, price, discountedPrice, description, imageUrl, creatorId]
+    [name, price, discountedPrice, descriptionEscape, imageUrl, creatorId]
   );
   return result.rows[0];
 };
@@ -89,9 +93,22 @@ export const updateProductService = async ({
   description,
   imageUrl,
 }: Omit<ProductT, "creatorId" | "updatedAt" | "createdAt">) => {
+  const descriptionEscape = escapeHTML(description || "") || null;
+
   const result = await pool.query(
     "UPDATE products SET name=COALESCE($1, name), price=COALESCE($2, price), discounted_price=COALESCE($3, discounted_price), description=COALESCE($4, description), image_url=COALESCE($5, image_url) WHERE id=$6 RETURNING *",
-    [name, price, discountedPrice, description, imageUrl, id]
+    [name, price, discountedPrice, descriptionEscape, imageUrl, id]
   );
   return result.rows[0];
+};
+
+export const getAllOwnerProductsImagesService = async (
+  id: number | null = null
+) => {
+  const result = await pool.query(
+    "SELECT image_url FROM products WHERE creator_id = $1",
+    [id]
+  );
+
+  return result.rows;
 };

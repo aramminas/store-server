@@ -1,3 +1,16 @@
+import { Request } from "express";
+
+type OmitUserT =
+  | "password"
+  | "avatar"
+  | "birth_date"
+  | "createdAt"
+  | "updatedAt";
+
+export interface RequestWithUser extends Request {
+  user?: Omit<UserT, OmitUserT>;
+}
+
 export type UserT = {
   id: number;
   firstName: string;
@@ -46,4 +59,16 @@ export type ProductDbT = {
   updated_at: Date;
 };
 
+export type TokenT = {
+  accessToken: string;
+};
+
 export type UserDtoT = Omit<UserT, "password" | "createdAt" | "updatedAt">;
+export type UserDataTokenT = UserDtoT & TokenT;
+
+export type RateLimitT = {
+  limit: number;
+  used: number;
+  remaining: number;
+  resetTime: Date;
+};

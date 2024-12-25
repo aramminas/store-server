@@ -1,2 +1,6 @@
 node_modules
 .env
+
+# project and users images
+public/images/products
+public/images/users

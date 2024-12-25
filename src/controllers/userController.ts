@@ -7,11 +7,20 @@ import {
   getAllUsersService,
   getUserByIdService,
   updateUserService,
+  deleteUserService,
 } from "../modules/userModel";
 import { userDto } from "../dtos";
-import { removeFile } from "../utils";
+import { jwtTokenGenerator } from "../utils/tokens";
 import { handleResponse } from "../utils/controller";
-import { UserDbT, UserDtoT, UserT } from "../types/common";
+import { refreshTokenCookieExpiresTime } from "../configs";
+import {
+  RequestWithUser,
+  UserDataTokenT,
+  UserDbT,
+  UserT,
+} from "../types/common";
+import { removeAllOwnerProductImages, removeFile } from "../utils";
+import { getAllOwnerProductsImagesService } from "../modules/productModel";
 
 export const loginUser = async (
   req: Request,
@@ -34,9 +43,20 @@ export const loginUser = async (
       return handleResponse(res, 401, "Invalid email or password");
     }
 
+    // generate JWT tokens
+    const { accessToken, refreshToken } = jwtTokenGenerator(user);
+
     const userData = userDto(user);
 
-    handleResponse<UserDtoT>(res, 200, "Login successful!", userData);
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      maxAge: refreshTokenCookieExpiresTime,
+    });
+
+    return handleResponse<UserDataTokenT>(res, 200, "Login successful!", {
+      ...userData,
+      accessToken,
+    });
   } catch (err) {
     next(err);
   }
@@ -93,6 +113,10 @@ export const getUserById = async (
   next: NextFunction
 ) => {
   try {
+    if (isNaN(+req.params.id)) {
+      return handleResponse(res, 422, "Unprocessable entity");
+    }
+
     const user = await getUserByIdService(+req.params.id);
     if (!user) return handleResponse(res, 404, "User not found");
 
@@ -104,7 +128,7 @@ export const getUserById = async (
 };
 
 export const updateUser = async (
-  req: Request,
+  req: RequestWithUser,
   res: Response,
   next: NextFunction
 ) => {
@@ -116,6 +140,10 @@ export const updateUser = async (
   }
 
   const userId = Number(req.params.id);
+
+  if (userId !== req?.user?.id) {
+    return handleResponse(res, 403, "Access Denied");
+  }
 
   // remove old user avatar
   if (avatar) {
@@ -137,6 +165,43 @@ export const updateUser = async (
     if (!updatedUser) return handleResponse(res, 404, "User not found");
 
     return handleResponse(res, 200, "User updated successfully", updatedUser);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteUser = async (
+  req: RequestWithUser,
+  res: Response,
+  next: NextFunction
+) => {
+  const userId = +req.params.id;
+
+  try {
+    if (isNaN(userId)) {
+      return handleResponse(res, 422, "Unprocessable entity");
+    }
+    const userProducts = await getAllOwnerProductsImagesService(userId);
+
+    if (req.user?.id !== userId) {
+      return handleResponse(res, 403, "Access Denied");
+    }
+
+    const deletedUser = await deleteUserService(+req.params.id);
+    if (!deletedUser) return handleResponse(res, 404, "User not found");
+
+    // remove user avatar
+    if (deletedUser.avatar) {
+      removeFile(deletedUser.avatar);
+    }
+
+    // remove user products images
+    if (deletedUser.id) {
+      const productImages = userProducts.map((product) => product.image_url);
+      removeAllOwnerProductImages(productImages);
+    }
+
+    return handleResponse(res, 200, "User deleted successfully", deleteUser);
   } catch (err) {
     next(err);
   }

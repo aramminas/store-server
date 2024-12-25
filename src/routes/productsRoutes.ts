@@ -9,22 +9,28 @@ import {
 import { uploadFile } from "../utils/uploadFile";
 import { validateCreateProduct } from "../middlewares/inputValidator";
 
-const router = Router();
+import { authenticateToken } from "../middlewares/authenticateToken";
 
+const router = Router();
+const prodectRouter = Router();
+prodectRouter.use(authenticateToken);
+
+// Public routes
 router.get("/", getAllProducts);
 router.get("/:id", getProductById);
-router.post(
+// Protected routes
+prodectRouter.post(
   "/",
   uploadFile("image", "products/"),
   validateCreateProduct,
   createProduct
 );
-router.patch(
+prodectRouter.patch(
   "/:id",
   uploadFile("image", "products/"),
   validateCreateProduct,
   updateProduct
 );
-router.delete("/:id", deleteProduct);
+prodectRouter.delete("/:id", deleteProduct);
 
-export default router;
+export default [router, prodectRouter];
