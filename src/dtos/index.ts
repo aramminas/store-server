@@ -1,13 +1,14 @@
-import { UserDbT, UserDtoT } from "../types/common";
+import { UserT, UserDtoT } from "../types/common";
 
-export const userDto = (user: UserDbT): UserDtoT => {
-  const { id, first_name, last_name, email, avatar, birth_date } = user;
+export const userDto = (user: UserT): UserDtoT => {
+  const { id, firstName, lastName, email, avatar, birthDate } = user;
+
   return {
     id,
-    firstName: first_name,
-    lastName: last_name,
+    firstName,
+    lastName,
     email,
     avatar,
-    birthDate: birth_date,
+    birthDate,
   };
 };

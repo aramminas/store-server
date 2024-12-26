@@ -1,24 +1,32 @@
 import bcrypt from "bcrypt";
-import pool from "../database/database";
+import { prisma } from "../../prisma";
 import { UserT } from "../types/common";
 
-export const getUserService = async (email: string) => {
-  const result = await pool.query("SELECT * FROM users WHERE email = $1;", [
-    email,
-  ]);
+export const getUserByEmailService = async (email: string) => {
+  const result = await prisma.users.findUnique({
+    where: { email: email },
+  });
 
-  return result.rows;
+  return result;
 };
 
 export const getAllUsersService = async () => {
-  const result = await pool.query("SELECT * FROM users");
+  const limit = 100;
+  const offset = 0;
 
-  return result.rows;
+  const result = await prisma.users.findMany({
+    take: limit,
+    skip: offset,
+  });
+
+  return result;
 };
 
 export const getUserByIdService = async (id: number) => {
-  const result = await pool.query("SELECT * FROM users where id = $1", [id]);
-  return result.rows[0];
+  const result = await prisma.users.findFirst({
+    where: { id },
+  });
+  return result;
 };
 
 export const createUserService = async ({
@@ -32,11 +40,18 @@ export const createUserService = async ({
   const salt = await bcrypt.genSalt();
   const hashedPassword = await bcrypt.hash(password, salt);
 
-  const result = await pool.query(
-    "INSERT INTO users (first_name, last_name, email, password, avatar, birth_date) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-    [firstName, lastName, email, hashedPassword, avatar, birthDate]
-  );
-  return result.rows[0];
+  const result = await prisma.users.create({
+    data: {
+      firstName,
+      lastName,
+      email: email,
+      password: hashedPassword,
+      avatar,
+      birthDate,
+    },
+  });
+
+  return result;
 };
 
 export const updateUserService = async (
@@ -46,17 +61,24 @@ export const updateUserService = async (
   avatar: string | null,
   birthDate: Date | null
 ) => {
-  const result = await pool.query(
-    "UPDATE users SET first_name=COALESCE($1, first_name), last_name=COALESCE($2, last_name), avatar=COALESCE($3, avatar), birth_date=COALESCE($4, birth_date) WHERE id=$5 RETURNING *",
-    [firstName, lastName, avatar, birthDate, id]
-  );
-  return result.rows[0];
+  const result = await prisma.users.update({
+    where: { id },
+    data: {
+      firstName: firstName || undefined,
+      lastName: lastName || undefined,
+      avatar: avatar || undefined,
+      birthDate: birthDate ? new Date(birthDate) : undefined,
+    },
+  });
+
+  return result;
 };
 
 export const deleteUserService = async (id: number) => {
-  const result = await pool.query(
-    "DELETE FROM users WHERE id = $1 RETURNING *",
-    [id]
-  );
-  return result.rows[0];
+  const result = await prisma.users.delete({
+    where: {
+      id,
+    },
+  });
+  return result;
 };

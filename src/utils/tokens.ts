@@ -1,37 +1,33 @@
 import jwt from "jsonwebtoken";
 
-import { UserDbT, UserDtoT } from "../types/common";
+import { UserDtoT } from "../types/common";
 import { jwtSecret, refreshTokenSecret } from "../configs/envVars";
 import { tokenExpiresTime, refreshTokenExpiresTime } from "../configs";
 
-export const jwtUserData = (user: UserDbT | UserDtoT) => {
-  if ("firstName" in user) {
-    return { user };
-  }
-
+export const jwtUserData = (user: UserDtoT) => {
   return {
     user: {
       id: user.id,
-      firstName: user.first_name,
-      lastName: user.last_name,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
     },
   };
 };
 
-export const generateAccessToken = (user: UserDbT | UserDtoT) => {
+export const generateAccessToken = (user: UserDtoT) => {
   return jwt.sign({ ...jwtUserData(user) }, jwtSecret, {
     expiresIn: tokenExpiresTime,
   });
 };
 
-export const generateRefreshToken = (user: UserDbT) => {
+export const generateRefreshToken = (user: UserDtoT) => {
   return jwt.sign({ ...jwtUserData(user) }, refreshTokenSecret, {
     expiresIn: refreshTokenExpiresTime,
   });
 };
 
-export const jwtTokenGenerator = (user: UserDbT) => ({
+export const jwtTokenGenerator = (user: UserDtoT) => ({
   accessToken: generateAccessToken(user),
   refreshToken: generateRefreshToken(user),
 });

@@ -19,7 +19,7 @@ export const removeFile = (
   return { success: true };
 };
 
-export const removeAllOwnerProductImages = (images: string[]) => {
+export const removeAllOwnerProductImages = (images: (string | null)[]) => {
   images.forEach((image) => {
     if (image) {
       removeFile(image);

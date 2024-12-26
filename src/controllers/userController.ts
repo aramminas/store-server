@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcrypt";
 
 import {
-  getUserService,
+  getUserByEmailService,
   createUserService,
   getAllUsersService,
   getUserByIdService,
@@ -13,13 +13,8 @@ import { userDto } from "../dtos";
 import { jwtTokenGenerator } from "../utils/tokens";
 import { handleResponse } from "../utils/controller";
 import { refreshTokenCookieExpiresTime } from "../configs";
-import {
-  RequestWithUser,
-  UserDataTokenT,
-  UserDbT,
-  UserT,
-} from "../types/common";
 import { removeAllOwnerProductImages, removeFile } from "../utils";
+import { RequestWithUser, UserDataTokenT, UserT } from "../types/common";
 import { getAllOwnerProductsImagesService } from "../modules/productModel";
 
 export const loginUser = async (
@@ -30,13 +25,12 @@ export const loginUser = async (
   const { email, password } = req.body;
 
   try {
-    const result = await getUserService(email);
+    const user = await getUserByEmailService(email);
 
-    if (result.length === 0) {
+    if (!user?.id) {
       return handleResponse(res, 401, "Invalid email or password");
     }
 
-    const user = result[0];
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -80,11 +74,15 @@ export const createUser = async (
       email,
       password,
       avatar,
-      birthDate,
+      birthDate: birthDate ? new Date(birthDate) : null,
     });
 
     return handleResponse(res, 201, "User created successfully", newUser);
   } catch (err) {
+    if (err && avatar) {
+      removeFile(avatar);
+    }
+
     next(err);
   }
 };
@@ -147,8 +145,8 @@ export const updateUser = async (
 
   // remove old user avatar
   if (avatar) {
-    const currentUser: UserDbT = await getUserByIdService(userId);
-    if (currentUser.avatar) {
+    const currentUser: UserT | null = await getUserByIdService(userId);
+    if (currentUser?.avatar) {
       removeFile(currentUser.avatar);
     }
   }
@@ -197,7 +195,7 @@ export const deleteUser = async (
 
     // remove user products images
     if (deletedUser.id) {
-      const productImages = userProducts.map((product) => product.image_url);
+      const productImages = userProducts.map((product) => product.imageUrl);
       removeAllOwnerProductImages(productImages);
     }
 

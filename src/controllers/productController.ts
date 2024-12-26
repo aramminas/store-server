@@ -20,6 +20,7 @@ export const getAllProducts = async (
 
   try {
     const products: ProductT[] = await getAllProductsService(ovnerId, query);
+
     return handleResponse<ProductT[]>(
       res,
       200,
@@ -73,6 +74,9 @@ export const createProduct = async (
       products
     );
   } catch (err) {
+    if (err && imageUrl) {
+      removeFile(imageUrl);
+    }
     next(err);
   }
 };
@@ -125,6 +129,9 @@ export const updateProduct = async (
       updatedProduct
     );
   } catch (err) {
+    if (err && imageUrl) {
+      removeFile(imageUrl);
+    }
     next(err);
   }
 };
