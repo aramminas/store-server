@@ -62,8 +62,8 @@ export const userLoginScheme = Joi.object({
 
 export const productCreateScheme = Joi.object({
   name: Joi.string().min(2).required(),
-  price: Joi.number().required(),
-  discountedPrice: Joi.number().optional(),
+  price: Joi.number().precision(2).greater(0).required(),
+  discountedPrice: Joi.number().precision(2).greater(0).optional(),
   description: Joi.string().optional(),
   birthDate: Joi.date().optional(),
   creatorId: Joi.number().required(),

@@ -2,19 +2,28 @@ import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcrypt";
 
 import {
+  UserT,
+  ProductImageT,
+  UserDataTokenT,
+  RequestWithUser,
+} from "../types/common";
+import {
   getUserByEmailService,
   createUserService,
   getAllUsersService,
   getUserByIdService,
   updateUserService,
   deleteUserService,
+  getAllOwnerProductsService,
 } from "../modules/userModel";
+import {
+  jwtTokenGenerator,
+  jwtTokenSetCookie,
+  jwtTokenClearCookie,
+} from "../utils/tokens";
 import { userDto } from "../dtos";
-import { jwtTokenGenerator } from "../utils/tokens";
 import { handleResponse } from "../utils/controller";
-import { refreshTokenCookieExpiresTime } from "../configs";
 import { removeAllOwnerProductImages, removeFile } from "../utils";
-import { RequestWithUser, UserDataTokenT, UserT } from "../types/common";
 import { getAllOwnerProductsImagesService } from "../modules/productModel";
 
 export const loginUser = async (
@@ -42,10 +51,8 @@ export const loginUser = async (
 
     const userData = userDto(user);
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      maxAge: refreshTokenCookieExpiresTime,
-    });
+    // Set refresh token to cookie (http only)
+    jwtTokenSetCookie(res, refreshToken);
 
     return handleResponse<UserDataTokenT>(res, 200, "Login successful!", {
       ...userData,
@@ -179,7 +186,8 @@ export const deleteUser = async (
     if (isNaN(userId)) {
       return handleResponse(res, 422, "Unprocessable entity");
     }
-    const userProducts = await getAllOwnerProductsImagesService(userId);
+    const userProducts: ProductImageT[] =
+      await getAllOwnerProductsImagesService(userId);
 
     if (req.user?.id !== userId) {
       return handleResponse(res, 403, "Access Denied");
@@ -199,7 +207,56 @@ export const deleteUser = async (
       removeAllOwnerProductImages(productImages);
     }
 
-    return handleResponse(res, 200, "User deleted successfully", deleteUser);
+    return handleResponse(res, 200, "User deleted successfully", deletedUser);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getUserProducts = async (
+  req: RequestWithUser,
+  res: Response,
+  next: NextFunction
+) => {
+  const userId = +req.params.id;
+
+  try {
+    if (isNaN(userId)) {
+      return handleResponse(res, 422, "Unprocessable entity");
+    }
+
+    const userProducts = await getAllOwnerProductsService(userId);
+
+    if (userProducts) {
+      return handleResponse(
+        res,
+        200,
+        "All user products have been successfully fetched",
+        userProducts
+      );
+    }
+
+    return handleResponse(res, 200, "User deleted successfully");
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const logoutUser = async (
+  req: RequestWithUser,
+  res: Response,
+  next: NextFunction
+) => {
+  const user = req?.user;
+
+  try {
+    if (!user) {
+      return handleResponse(res, 403, "Access Denied");
+    }
+
+    jwtTokenClearCookie(res);
+
+    return handleResponse(res, 200, "The user has successfully logged out.");
   } catch (err) {
     next(err);
   }

@@ -35,6 +35,15 @@ export type ProductT = {
   updatedAt: Date;
 };
 
+export type ProductImageT = {
+  imageUrl: string | null;
+};
+
+export type ProductsDataT = {
+  total: number;
+  products: ProductT[];
+};
+
 export type TokenT = {
   accessToken: string;
 };

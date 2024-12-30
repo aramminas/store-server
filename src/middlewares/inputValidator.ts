@@ -14,13 +14,15 @@ export const validateLoginUser = async (
   try {
     const { error } = userLoginScheme.validate(req.body);
 
-    if (error)
+    if (error) {
       return Promise.reject(
         res.status(400).json({
           status: 400,
           message: error.details[0].message,
         })
       );
+    }
+
     next();
   } catch (error) {
     next(error);
@@ -35,13 +37,14 @@ export const validateCreateUser = async (
   try {
     const { error } = userCreateScheme.validate(req.body);
 
-    if (error)
+    if (error) {
       return Promise.reject(
         res.status(400).json({
           status: 400,
           message: error.details[0].message,
         })
       );
+    }
 
     next();
   } catch (error) {
@@ -57,13 +60,15 @@ export const validateUpdateUser = (
   try {
     const { error } = userUpdateScheme.validate(req.body);
 
-    if (error)
+    if (error) {
       return Promise.reject(
         res.status(400).json({
           status: 400,
           message: error.details[0].message,
         })
       );
+    }
+
     next();
   } catch (error) {
     next(error);
@@ -78,13 +83,14 @@ export const validateCreateProduct = async (
   try {
     const { error } = productCreateScheme.validate(req.body);
 
-    if (error)
+    if (error) {
       return Promise.reject(
         res.status(400).json({
           status: 400,
           message: error.details[0].message,
         })
       );
+    }
 
     next();
   } catch (error) {

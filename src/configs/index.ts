@@ -12,4 +12,5 @@ export const maxFileSize = 2 * 1024 * 1024; // 2MB
 export const passwordRegExp = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
 export const tokenExpiresTime = "15m";
 export const refreshTokenExpiresTime = "1d";
+export const refreshTokenKey = "refreshToken";
 export const refreshTokenCookieExpiresTime = 24 * 60 * 60 * 1000; // 1 day

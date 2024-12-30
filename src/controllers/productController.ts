@@ -8,7 +8,7 @@ import {
 } from "../modules/productModel";
 import { removeFile } from "../utils";
 import { handleResponse } from "../utils/controller";
-import { ProductT, RequestWithUser } from "../types/common";
+import { ProductsDataT, ProductT, RequestWithUser } from "../types/common";
 
 export const getAllProducts = async (
   req: Request,
@@ -19,13 +19,16 @@ export const getAllProducts = async (
   const query = req.query.q ? String(req.query.q) : null;
 
   try {
-    const products: ProductT[] = await getAllProductsService(ovnerId, query);
+    const productsData: ProductsDataT = await getAllProductsService(
+      ovnerId,
+      query
+    );
 
-    return handleResponse<ProductT[]>(
+    return handleResponse<ProductsDataT>(
       res,
       200,
       "Products fetched successfully",
-      products
+      productsData
     );
   } catch (err) {
     next(err);

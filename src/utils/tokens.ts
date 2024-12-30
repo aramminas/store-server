@@ -1,8 +1,14 @@
+import { Response } from "express";
 import jwt from "jsonwebtoken";
 
+import {
+  refreshTokenKey,
+  tokenExpiresTime,
+  refreshTokenExpiresTime,
+  refreshTokenCookieExpiresTime,
+} from "../configs";
 import { UserDtoT } from "../types/common";
 import { jwtSecret, refreshTokenSecret } from "../configs/envVars";
-import { tokenExpiresTime, refreshTokenExpiresTime } from "../configs";
 
 export const jwtUserData = (user: UserDtoT) => {
   return {
@@ -31,3 +37,14 @@ export const jwtTokenGenerator = (user: UserDtoT) => ({
   accessToken: generateAccessToken(user),
   refreshToken: generateRefreshToken(user),
 });
+
+export const jwtTokenSetCookie = (res: Response, refreshToken: string) => {
+  res.cookie(refreshTokenKey, refreshToken, {
+    httpOnly: true,
+    maxAge: refreshTokenCookieExpiresTime,
+  });
+};
+
+export const jwtTokenClearCookie = (res: Response) => {
+  res.clearCookie(refreshTokenKey);
+};

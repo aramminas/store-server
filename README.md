@@ -11,6 +11,10 @@ II. Run the following commands
 
 `npm run migrate`
 
+# On production need run this command (afther new migration)
+
+`npm run postinstall`
+
 ## For Migrations start
 
 <!-- create first migration -->

@@ -6,6 +6,8 @@ import {
   getUserById,
   updateUser,
   deleteUser,
+  logoutUser,
+  getUserProducts,
 } from "../controllers/userController";
 import {
   validateCreateUser,
@@ -30,6 +32,7 @@ router.post(
 );
 // Protected routes
 prodectRouter.get("/", getAllUsers);
+prodectRouter.get("/logout", logoutUser);
 prodectRouter.get("/:id", getUserById);
 prodectRouter.patch(
   "/:id",
@@ -38,5 +41,6 @@ prodectRouter.patch(
   updateUser
 );
 prodectRouter.delete("/:id", deleteUser);
+prodectRouter.get("/:id/products", getUserProducts);
 
 export default [router, prodectRouter];

@@ -1,5 +1,5 @@
 import escapeHTML from "escape-html";
-import { prisma } from "../../prisma";
+import prisma from "../../prisma";
 
 import { ProductT } from "../types/common";
 
@@ -19,17 +19,18 @@ export const getAllProductsService = async (
         contains: name || undefined,
       },
     },
-
     orderBy: {
       createdAt: "desc",
     },
   });
 
-  return result;
+  const totalProducts = await prisma.products.count();
+
+  return { total: totalProducts, products: result };
 };
 
 export const getProductByIdService = async <T>(id: number) => {
-  const result = await prisma.products.findFirst({
+  const result = await prisma.products.findUnique({
     where: {
       id: id,
     },

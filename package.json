@@ -5,8 +5,14 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx watch src/index.ts",
+    "studio": "npx prisma studio",
     "status": "npx prisma migrate status",
-    "migrate": "npx prisma migrate deploy"
+    "migrate": "npx prisma migrate deploy",
+    "seeds": "npx prisma db seed",
+    "postinstall": "npx prisma generate && npx prisma migrate deploy"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   },
   "keywords": [],
   "author": "",

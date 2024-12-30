@@ -8,11 +8,10 @@ CREATE TABLE "Products" (
     "imageUrl" TEXT,
     "creatorId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL
-);
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
--- CreateIndex
-CREATE UNIQUE INDEX "Products_id_key" ON "Products"("id");
+    CONSTRAINT "Products_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateIndex
 CREATE INDEX "Products_name_idx" ON "Products"("name");

@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { prisma } from "../../prisma";
+import prisma from "../../prisma";
 import { UserT } from "../types/common";
 
 export const getUserByEmailService = async (email: string) => {
@@ -23,7 +23,7 @@ export const getAllUsersService = async () => {
 };
 
 export const getUserByIdService = async (id: number) => {
-  const result = await prisma.users.findFirst({
+  const result = await prisma.users.findUnique({
     where: { id },
   });
   return result;
@@ -80,5 +80,24 @@ export const deleteUserService = async (id: number) => {
       id,
     },
   });
+  return result;
+};
+
+export const getAllOwnerProductsService = async (id: number) => {
+  const limit = 100;
+  const offset = 0;
+
+  const result = await prisma.users.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      products: {
+        take: limit,
+        skip: offset,
+      },
+    },
+  });
+
   return result;
 };
