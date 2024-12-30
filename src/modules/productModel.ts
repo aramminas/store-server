@@ -4,19 +4,18 @@ import prisma from "../../prisma";
 import { ProductT } from "../types/common";
 
 export const getAllProductsService = async (
-  id: number | null = null,
-  name: string | null = null
+  id?: number,
+  name?: string,
+  offset?: number,
+  limit?: number
 ) => {
-  const limit = 100;
-  const offset = 0;
-
   const result = await prisma.products.findMany({
     take: limit,
     skip: offset,
     where: {
-      creatorId: id || undefined,
+      creatorId: id,
       name: {
-        contains: name || undefined,
+        contains: name,
       },
     },
     orderBy: {

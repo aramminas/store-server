@@ -15,13 +15,17 @@ export const getAllProducts = async (
   res: Response,
   next: NextFunction
 ) => {
-  const ovnerId = req.query.ovnerId ? +req.query.ovnerId : null;
-  const query = req.query.q ? String(req.query.q) : null;
+  const ovnerId = req.query.ovnerId ? +req.query.ovnerId : undefined;
+  const query = req.query.q ? String(req.query.q) : undefined;
+  const offset = req.query.offset ? Number(req.query.offset) : undefined;
+  const limit = req.query.limit ? Number(req.query.limit) : undefined;
 
   try {
     const productsData: ProductsDataT = await getAllProductsService(
       ovnerId,
-      query
+      query,
+      offset,
+      limit
     );
 
     return handleResponse<ProductsDataT>(
